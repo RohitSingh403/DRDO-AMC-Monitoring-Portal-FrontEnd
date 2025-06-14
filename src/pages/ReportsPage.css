@@ -1,0 +1,39 @@
+/* Custom scrollbar styles */
+.reports-container::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+.reports-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.reports-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.reports-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* For Firefox */
+.reports-container {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.reports-page::-webkit-scrollbar {
+  display: none;
+}
+
+.reports-page {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth scrolling */
+.reports-container {
+  scroll-behavior: smooth;
+}

@@ -1,0 +1,488 @@
+import React, { useState } from 'react';
+import { 
+  FiCheckCircle, 
+  FiAlertTriangle, 
+  FiClock, 
+  FiUsers, 
+  FiFileText,
+  FiTrendingUp,
+  FiTrendingDown,
+  FiCalendar,
+  FiArrowRight,
+  FiMoreHorizontal,
+  FiPlus,
+  FiSun
+} from 'react-icons/fi';
+
+// Import Components
+import TaskCategories from '../components/TaskCategories';
+import TaskForm from '../components/forms/task/TaskForm';
+import Modal from '../components/common/Modal';
+
+// Sample data for recent activities
+const activities = [
+  {
+    id: 1,
+    title: 'Project Alpha',
+    description: 'New task assigned: Dashboard Design',
+    time: '2 minutes ago',
+    status: 'completed',
+    statusText: 'Completed'
+  },
+  {
+    id: 2,
+    title: 'Meeting',
+    description: 'Team sync - Q2 Planning',
+    time: '1 hour ago',
+    status: 'upcoming',
+    statusText: 'In 30 min'
+  },
+  {
+    id: 3,
+    title: 'Project Beta',
+    description: 'Bug reported in user authentication',
+    time: '3 hours ago',
+    status: 'alert',
+    statusText: 'Attention needed'
+  },
+  {
+    id: 4,
+    title: 'Project Gamma',
+    description: 'New feature deployed to production',
+    time: '5 hours ago',
+    status: 'completed',
+    statusText: 'Deployed'
+  },
+  {
+    id: 5,
+    title: 'Project Delta',
+    description: 'Client review meeting scheduled',
+    time: '1 day ago',
+    status: 'upcoming',
+    statusText: 'Tomorrow'
+  }
+];
+
+// Stats data with dark mode support
+const statsData = [
+  { 
+    title: 'Total Projects', 
+    value: '24', 
+    change: '+5', 
+    trend: 'up',
+    icon: <FiFileText className="h-5 w-5" />,
+    color: 'bg-blue-100 dark:bg-blue-900/30',
+    textColor: 'text-blue-600',
+    darkColor: 'dark:bg-blue-900/30',
+    darkTextColor: 'dark:text-blue-400'
+  },
+  { 
+    title: 'Tasks Completed', 
+    value: '156', 
+    change: '+12', 
+    trend: 'up',
+    icon: <FiCheckCircle className="h-5 w-5" />,
+    color: 'bg-green-100 dark:bg-green-900/30',
+    textColor: 'text-green-600',
+    darkColor: 'dark:bg-green-900/30',
+    darkTextColor: 'dark:text-green-400'
+  },
+  { 
+    title: 'Pending Tasks', 
+    value: '8', 
+    change: '-3', 
+    trend: 'down',
+    icon: <FiAlertTriangle className="h-5 w-5" />,
+    color: 'bg-amber-100 dark:bg-amber-900/30',
+    textColor: 'text-amber-600',
+    darkColor: 'dark:bg-amber-900/30',
+    darkTextColor: 'dark:text-amber-400'
+  },
+  { 
+    title: 'Team Members', 
+    value: '12', 
+    change: '+2', 
+    trend: 'up',
+    icon: <FiUsers className="h-5 w-5" />,
+    color: 'bg-purple-100 dark:bg-purple-900/30',
+    textColor: 'text-purple-600',
+    darkColor: 'dark:bg-purple-900/30',
+    darkTextColor: 'dark:text-purple-400'
+  }
+];
+
+// Sample data for projects
+const projectsData = [
+  {
+    id: 1,
+    name: 'Website Redesign',
+    description: 'Complete redesign of company website with modern UI/UX',
+    progress: 75,
+    status: 'In Progress',
+    team: [
+      { name: 'JD', bg: 'bg-blue-500' },
+      { name: 'AS', bg: 'bg-green-500' },
+      { name: 'MJ', bg: 'bg-purple-500' },
+      { name: '+2', bg: 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300' }
+    ],
+    deadline: 'May 15, 2023',
+    budget: '$12,500',
+    priority: 'High',
+    startDate: 'Mar 1, 2023'
+  },
+  {
+    id: 2,
+    name: 'Mobile App Development',
+    description: 'Building a cross-platform mobile application with React Native',
+    progress: 45,
+    status: 'In Progress',
+    team: [
+      { name: 'TM', bg: 'bg-red-500' },
+      { name: 'AK', bg: 'bg-yellow-500' },
+      { name: '+3', bg: 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300' }
+    ],
+    deadline: 'Jun 30, 2023',
+    budget: '$24,000',
+    priority: 'Medium',
+    startDate: 'Feb 15, 2023'
+  },
+  {
+    id: 3,
+    name: 'E-commerce Platform',
+    description: 'New online store with payment integration and inventory management',
+    progress: 90,
+    status: 'Almost Done',
+    team: [
+      { name: 'JD', bg: 'bg-blue-500' },
+      { name: 'MJ', bg: 'bg-purple-500' },
+      { name: 'AK', bg: 'bg-yellow-500' }
+    ],
+    deadline: 'Apr 25, 2023',
+    budget: '$18,750',
+    priority: 'High',
+    startDate: 'Jan 10, 2023'
+  }
+];
+
+const recentActivities = [
+  {
+    id: 1,
+    title: 'Project Alpha',
+    description: 'Completed all tasks for the sprint',
+    time: '2 hours ago',
+    status: 'completed'
+  },
+  {
+    id: 2,
+    title: 'Team Meeting',
+    description: 'Scheduled for tomorrow at 10:00 AM',
+    time: '5 hours ago',
+    status: 'upcoming'
+  },
+  {
+    id: 3,
+    title: 'Bug Fixes',
+    description: 'Reported 3 new issues',
+    time: '1 day ago',
+    status: 'alert'
+  },
+  {
+    id: 4,
+    title: 'New Project',
+    description: 'Onboarding documents uploaded',
+    time: '2 days ago',
+    status: 'completed'
+  }
+];
+
+const StatCard = ({ title, value, change, trend, icon, color, textColor, darkColor, darkTextColor }) => {
+  return (
+    <div className="group bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md hover:shadow-primary-100/20 dark:hover:shadow-primary-900/20 hover:-translate-y-0.5">
+      <div className="flex items-start justify-between">
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors">{title}</p>
+          <div className="flex items-baseline space-x-2">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white transition-colors">{value}</p>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+              trend === 'up' 
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+            }`}>
+              {trend === 'up' ? (
+                <FiTrendingUp className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+              ) : (
+                <FiTrendingDown className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+              )}
+              {change}
+            </span>
+          </div>
+          <div className="h-1 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div 
+              className={`h-full ${
+                trend === 'up' 
+                  ? 'bg-gradient-to-r from-green-400 to-green-500' 
+                  : 'bg-gradient-to-r from-red-400 to-red-500'
+              }`}
+              style={{ width: trend === 'up' ? '75%' : '25%' }}
+            ></div>
+          </div>
+        </div>
+        <div className={`p-2.5 rounded-xl ${color} ${darkColor} transition-all group-hover:scale-110`}>
+          <span className={`${textColor} ${darkTextColor} text-xl`}>
+            {icon}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ActivityItem = ({ title, description, time, status, statusText }) => {
+  const statusStyles = {
+    completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    upcoming: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    alert: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+  };
+
+  const statusIcons = {
+    completed: <FiCheckCircle className="h-4 w-4" />,
+    upcoming: <FiClock className="h-4 w-4" />,
+    alert: <FiAlertTriangle className="h-4 w-4" />
+  };
+
+  return (
+    <div className="flex items-start pb-4 last:pb-0">
+      <div className="flex-shrink-0 mt-1">
+        <div className={`h-2.5 w-2.5 rounded-full ${
+          status === 'completed' ? 'bg-green-500' : 
+          status === 'upcoming' ? 'bg-blue-500' : 'bg-amber-500'
+        }`}></div>
+        {statusIcons[status]}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-900 truncate">{title}</p>
+        <p className="text-sm text-gray-500">{description}</p>
+      </div>
+      <div className="ml-4 text-xs text-gray-400">{time}</div>
+    </div>
+  );
+};
+
+const ProjectCard = ({ project }) => {
+  const priorityColors = {
+    'High': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    'Medium': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    'Low': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+  };
+
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'in progress':
+        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'almost done':
+        return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+      case 'on hold':
+        return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+      default:
+        return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
+    }
+  };
+
+  return (
+    <div className="group bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-all hover:shadow-lg hover:shadow-primary-100/20 dark:hover:shadow-primary-900/10 hover:-translate-y-0.5">
+      <div className="p-6">
+        <div className="flex justify-between items-start">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">{project.name}</h3>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityColors[project.priority] || ''}`}>
+                {project.priority}
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{project.description}</p>
+          </div>
+          <div className="ml-4 flex-shrink-0">
+            <button 
+              className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200 transition-colors"
+              aria-label="More options"
+            >
+              <FiMoreHorizontal className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="mt-5 space-y-3">
+          <div>
+            <div className="flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+              <span>Progress</span>
+              <span>{project.progress}%</span>
+            </div>
+            <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+              <div 
+                className={`h-full rounded-full ${
+                  project.progress < 30 ? 'bg-gradient-to-r from-red-400 to-red-500' : 
+                  project.progress < 70 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' : 
+                  'bg-gradient-to-r from-green-400 to-green-500'
+                }`} 
+                style={{ width: `${project.progress}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center">
+              <FiCalendar className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+              <span>{project.startDate}</span>
+            </div>
+            <div className="flex items-center">
+              <FiClock className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+              <span>Due {project.deadline}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+          <div className="flex -space-x-2">
+            {project.team.map((member, idx) => (
+              <div 
+                key={idx}
+                className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm ${
+                  member.bg.includes('bg-gray-200') 
+                    ? 'text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600' 
+                    : 'text-white'
+                } ${member.bg}`}
+                title={member.name.startsWith('+') ? `${member.name.replace('+', '')} more` : member.name}
+              >
+                {member.name}
+              </div>
+            ))}
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-400 dark:text-gray-500">Budget</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white">{project.budget}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Dashboard = () => {
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
+  const handleAddTask = (data) => {
+    console.log('New task:', data);
+    // Here you would typically make an API call to save the task
+    setIsTaskModalOpen(false);
+  };
+
+  return (
+    <div className="w-full max-w-full px-0 space-y-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
+        <button
+          onClick={() => setIsTaskModalOpen(true)}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <FiPlus className="-ml-1 mr-2 h-4 w-4" />
+          Add Task
+        </button>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statsData.map((stat, index) => (
+          <StatCard key={index} {...stat} />
+        ))}
+      </div>
+
+      {/* Task Categories */}
+      <div className="w-full">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Task Categories</h2>
+        <TaskCategories />
+      </div>
+      
+      <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Activities */}
+        <div className="lg:col-span-1">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activities</h2>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                {recentActivities.map(activity => (
+                  <ActivityItem key={activity.id} {...activity} statusText={activity.status} />
+                ))}
+              </div>
+              <div className="mt-4 text-center">
+                <a href="#" className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                  View all activities
+                  <FiArrowRight className="ml-1 h-4 w-4" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Active Projects */}
+        <div className="lg:col-span-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Active Projects</h2>
+              <button className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                View all
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 gap-6">
+                {projectsData.map(project => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Quick Stats */}
+      <div className="w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Quick Stats</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Tasks Completed', value: '156', change: '+12%', trend: 'up' },
+            { label: 'Pending Tasks', value: '24', change: '-5%', trend: 'down' },
+            { label: 'Active Projects', value: '8', change: '+2', trend: 'up' },
+            { label: 'Team Members', value: '24', change: '+3', trend: 'up' },
+          ].map((stat, index) => (
+            <div key={index} className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+              <div className="flex items-end justify-between mt-1">
+                <p className="text-xl font-semibold text-gray-900 dark:text-white">{stat.value}</p>
+                <span className={`text-xs font-medium ${
+                  stat.trend === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                }`}>
+                  {stat.change}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Add Task Modal */}
+      <Modal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        title="Create New Task"
+      >
+        <TaskForm 
+          onSubmit={handleAddTask} 
+          onCancel={() => setIsTaskModalOpen(false)} 
+        />
+      </Modal>
+    </div>
+  );
+};
+
+export default Dashboard;
